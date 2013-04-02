@@ -11,8 +11,6 @@ AUTOCLIENT_POST_COMMENT = null;
 AUTOCLIENT_DONE = false;
 
 
-var lorem = new Lorem();
-
 var _allSubscriptionsReady = function () {
   return _.all(Meteor._LivedataConnection._allConnections, function (conn) {
     return _.all(conn._subscriptions, function (sub) {
@@ -51,8 +49,12 @@ autoclient = function (id) {
       AUTOCLIENT_PRE_POST = new Date();
       Meteor.call('post', {
         url: "http://meteor.com/" + Random.id(),
-        headline: lorem.createText(1, 2),
-        body: lorem.createText(1, 1)
+        headline: dimsum.generate(1, {
+          sentences_per_paragraph: [1, 1],
+          words_per_sentence: [5, 10],
+          commas_per_sentence: [0, 0]
+        }),
+        body: dimsum.generate(2)
       }, function () {
         AUTOCLIENT_POST_POST = new Date();
         setTimeout(function () {
@@ -62,7 +64,7 @@ autoclient = function (id) {
             'comment',
             post._id,
             null,
-            lorem.createText(1, 1),
+            dimsum.paragraph(),
             function () {
               AUTOCLIENT_POST_COMMENT = new Date();
               AUTOCLIENT_DONE = true;
