@@ -1,13 +1,13 @@
-// Globals for Phantom to read out.
+var STARTUP_TIME = null;
+var ALL_SUBS_LOADED_TIME = null;
+var AUTOCLIENT_START = null;
+var AUTOCLIENT_LOGGED_IN = null;
+var AUTOCLIENT_PRE_POST = null;
+var AUTOCLIENT_POST_POST = null;
+var AUTOCLIENT_PRE_COMMENT = null;
+var AUTOCLIENT_POST_COMMENT = null;
 
-STARTUP_TIME = null;
-ALL_SUBS_LOADED_TIME = null;
-AUTOCLIENT_START = null;
-AUTOCLIENT_LOGGED_IN = null;
-AUTOCLIENT_PRE_POST = null;
-AUTOCLIENT_POST_POST = null;
-AUTOCLIENT_PRE_COMMENT = null;
-AUTOCLIENT_POST_COMMENT = null;
+// Global for Phantom to read out.
 AUTOCLIENT_DONE = false;
 
 
@@ -79,4 +79,15 @@ autoclient = function (id) {
     email: _id + "@example.com",
     password: id
   }, afterLogin);
+};
+
+autoclientResult = function () {
+  if (!AUTOCLIENT_DONE)
+    return null;
+  return {
+    startTime: STARTUP_TIME,
+    loadTime: ALL_SUBS_LOADED_TIME,
+    postLatency: AUTOCLIENT_POST_POST.valueOf() - AUTOCLIENT_PRE_POST.valueOf(),
+    commentLatency: AUTOCLIENT_POST_COMMENT.valueOf() - AUTOCLIENT_PRE_COMMENT.valueOf()
+  };
 };
