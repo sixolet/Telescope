@@ -36,30 +36,28 @@ Meteor.startup(function () {
 });
 
 
+
 autoclient = function (id) {
   if (!id)
     id = Random.id();
   var _id = '_' + id;
-  AUTOCLIENT_START = new Date();
-  Accounts.createUser({
-    username: _id,
-    email: _id + "@example.com",
-    password: id
-  }, function () {
+  var afterLogin = function (err) {
+    if (err) {
+      Accounts.loginWithPassword(_id, afterLogin);
+      return;
+    }
     AUTOCLIENT_LOGGED_IN = new Date();
     setTimeout(function () {
       AUTOCLIENT_PRE_POST = new Date();
       Meteor.call('post', {
-        url: "http://meteor.com/" + id,
+        url: "http://meteor.com/" + Random.id(),
         headline: lorem.createText(1, 2),
         body: lorem.createText(1, 1)
       }, function () {
         AUTOCLIENT_POST_POST = new Date();
         setTimeout(function () {
           AUTOCLIENT_PRE_COMMENT = new Date();
-          var post = Posts.findOne({_id: {$gt: Random.id()}}, {sort: [["_id", 1]]});
-          if (!post)
-            post = Posts.findOne();
+          var post = Random.choice(Posts.find({}).fetch());
           Meteor.call(
             'comment',
             post._id,
@@ -72,5 +70,11 @@ autoclient = function (id) {
         }, Random.fraction() * 10000);
       });
     }, Random.fraction() * 10000);
-  });
+  };
+  AUTOCLIENT_START = new Date();
+  Accounts.createUser({
+    username: _id,
+    email: _id + "@example.com",
+    password: id
+  }, afterLogin);
 };
