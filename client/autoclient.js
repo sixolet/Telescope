@@ -1,11 +1,11 @@
-var STARTUP_TIME = null;
-var ALL_SUBS_LOADED_TIME = null;
-var AUTOCLIENT_START = null;
-var AUTOCLIENT_LOGGED_IN = null;
-var AUTOCLIENT_PRE_POST = null;
-var AUTOCLIENT_POST_POST = null;
-var AUTOCLIENT_PRE_COMMENT = null;
-var AUTOCLIENT_POST_COMMENT = null;
+var startupTime = null;
+var allSubsLoaded = null;
+var autoclientStart = null;
+var autoclientLoggedIn = null;
+var autoclientPrePost = null;
+var autoclientPostPost = null;
+var autoclientPreComment = null;
+var autoclientPostComment = null;
 
 // Global for Phantom to read out.
 AUTOCLIENT_DONE = false;
@@ -21,14 +21,16 @@ var _allSubscriptionsReady = function () {
 };
 
 Meteor.startup(function () {
-  STARTUP_TIME = new Date();
+  startupTime = new Date();
   Deps.autorun(function () {
     var ready = _allSubscriptionsReady();
-    if (ready && !ALL_SUBS_LOADED_TIME) {
-      ALL_SUBS_LOADED_TIME = new Date();
-      console.log("startup", STARTUP_TIME);
-      console.log("all subs loaded", ALL_SUBS_LOADED_TIME);
-      console.log("elapsed between", ALL_SUBS_LOADED_TIME.valueOf() - STARTUP_TIME.valueOf());
+    if (ready && !allSubsLoaded) {
+      allSubsLoaded = new Date();
+      if (typeof callPhantom !== 'undefined')
+        callPhantom({event: "allSubs"});
+      console.log("startup", startupTime);
+      console.log("all subs loaded", allSubsLoaded);
+      console.log("elapsed between", allSubsLoaded.valueOf() - startupTime.valueOf());
     }
   });
 });
@@ -44,9 +46,9 @@ autoclient = function (id) {
       Accounts.loginWithPassword(_id, afterLogin);
       return;
     }
-    AUTOCLIENT_LOGGED_IN = new Date();
+    autoclientLoggedIn = new Date();
     setTimeout(function () {
-      AUTOCLIENT_PRE_POST = new Date();
+      autoclientPrePost = new Date();
       Meteor.call('post', {
         url: "http://meteor.com/" + Random.id(),
         headline: dimsum.generate(1, {
@@ -56,9 +58,9 @@ autoclient = function (id) {
         }),
         body: dimsum.generate(2)
       }, function () {
-        AUTOCLIENT_POST_POST = new Date();
+        autoclientPostPost = new Date();
         setTimeout(function () {
-          AUTOCLIENT_PRE_COMMENT = new Date();
+          autoclientPreComment = new Date();
           var post = Random.choice(Posts.find({}).fetch());
           Meteor.call(
             'comment',
@@ -66,14 +68,14 @@ autoclient = function (id) {
             null,
             dimsum.paragraph(),
             function () {
-              AUTOCLIENT_POST_COMMENT = new Date();
+              autoclientPostComment = new Date();
               AUTOCLIENT_DONE = true;
             });
         }, Random.fraction() * 10000);
       });
     }, Random.fraction() * 10000);
   };
-  AUTOCLIENT_START = new Date();
+  autoclientStart = new Date();
   Accounts.createUser({
     username: _id,
     email: _id + "@example.com",
@@ -81,13 +83,14 @@ autoclient = function (id) {
   }, afterLogin);
 };
 
-autoclientResult = function () {
+// Has to return JSON-able things
+autoclientResult = function (start, events) {
   if (!AUTOCLIENT_DONE)
     return null;
   return {
-    startTime: STARTUP_TIME,
-    loadTime: ALL_SUBS_LOADED_TIME,
-    postLatency: AUTOCLIENT_POST_POST.valueOf() - AUTOCLIENT_PRE_POST.valueOf(),
-    commentLatency: AUTOCLIENT_POST_COMMENT.valueOf() - AUTOCLIENT_PRE_COMMENT.valueOf()
+    loadLatency: events.allSubs.time - start,
+    loginLatency: autoclientLoggedIn.valueOf() - autoclientStart.valueOf(),
+    postLatency: autoclientPostPost.valueOf() - autoclientPrePost.valueOf(),
+    commentLatency: autoclientPostComment.valueOf() - autoclientPreComment.valueOf()
   };
 };
