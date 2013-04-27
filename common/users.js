@@ -30,8 +30,8 @@ getEmail = function(user){
     return user.emails[0].address || user.emails[0].email;
   }else if(user.profile && user.profile.email){
     return user.profile.email;
-  }else{ 
-    return ''; 
+  }else{
+    return '';
   }
 }
 getAvatarUrl = function(user){
@@ -48,7 +48,7 @@ getCurrentUserEmail = function(){
   return Meteor.user() ? getEmail(Meteor.user()) : '';
 }
 userProfileComplete = function(user) {
-  return !!getEmail(user);
+  return true;
 }
 
 findLast = function(user, collection){

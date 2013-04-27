@@ -43,7 +43,7 @@ autoclient = function (id) {
   var _id = '_' + id;
   var afterLogin = function (err) {
     if (err) {
-      Accounts.loginWithPassword(_id, afterLogin);
+      Meteor.loginWithPassword(_id, id, afterLogin);
       return;
     }
     autoclientLoggedIn = new Date();
@@ -76,11 +76,17 @@ autoclient = function (id) {
     }, Random.fraction() * 10000);
   };
   autoclientStart = new Date();
-  Accounts.createUser({
-    username: _id,
-    email: _id + "@example.com",
-    password: id
-  }, afterLogin);
+  if (Meteor.userId()) {
+    Meteor.logout(function () {
+      afterLogin(true);
+    });
+  } else {
+    Accounts.createUser({
+      username: _id,
+      email: _id + "@example.com",
+      password: id
+    }, afterLogin);
+  }
 };
 
 // Has to return JSON-able things

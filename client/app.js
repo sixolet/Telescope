@@ -41,7 +41,7 @@ Meteor.subscribe('allUsers');
 // ** Notifications **
 // Only load if user is logged in
 
-var Notifications = new Meteor.Collection('notifications');
+Notifications = new Meteor.Collection('notifications');
 if(Meteor.user()){
   Meteor.subscribe('notifications');
 }
@@ -69,12 +69,12 @@ var postListSubscription = function(find, options, per_page) {
   return handle;
 }
 
-var topPostsHandle = postListSubscription(FIND_APPROVED, {sort: {sticky: -1, score: -1}}, 10);
-var newPostsHandle = postListSubscription(FIND_APPROVED, {sort: {sticky: -1, submitted: -1}}, 10);
-var bestPostsHandle = postListSubscription(FIND_APPROVED, {sort: {sticky: -1, baseScore: -1}}, 10);
-var pendingPostsHandle = postListSubscription(
-  {$or: [{status: STATUS_PENDING}, {status: STATUS_REJECTED}]}, 
-  {sort: {createdAt: -1}}, 
+topPostsHandle = postListSubscription(FIND_APPROVED, {sort: {sticky: -1, score: -1}}, 10);
+newPostsHandle = postListSubscription(FIND_APPROVED, {sort: {sticky: -1, submitted: -1}}, 10);
+bestPostsHandle = postListSubscription(FIND_APPROVED, {sort: {sticky: -1, baseScore: -1}}, 10);
+pendingPostsHandle = postListSubscription(
+  {$or: [{status: STATUS_PENDING}, {status: STATUS_REJECTED}]},
+  {sort: {createdAt: -1}},
   10
 );
 
@@ -97,25 +97,25 @@ Meteor.autorun(function() {
   var daySubscription = function(mDate) {
     var find = _.extend({
         submitted: {
-          $gte: mDate.startOf('day').valueOf(), 
+          $gte: mDate.startOf('day').valueOf(),
           $lt: mDate.endOf('day').valueOf()
         }
       }, FIND_APPROVED);
     // note: the digest is ranked by baseScore and not score because we want the posts with the most votes of the day
     // independantly of age
     var options = {sort: {baseScore: -1}};
-    
+
     // we aren't ever going to paginate this sub, but we'll use pSub
-    // so we have a reactive loading() function 
+    // so we have a reactive loading() function
     // (grr... https://github.com/meteor/meteor/pull/273)
     return postListSubscription(find, options, 50);
   };
-  
+
   // take it to the start of the day.
   var mDate = currentMDateForDigest();
   var firstDate = moment(mDate).subtract('days', DIGEST_PRELOADING);
   var lastDate = moment(mDate).add('days', DIGEST_PRELOADING);
-  
+
   // first unsubscribe all the subscriptions that fall outside of our current range
   _.each(digestHandles, function(handle, hash) {
     var mDate = moment(hash, 'DD-MM-YYYY');
@@ -125,9 +125,9 @@ Meteor.autorun(function() {
       delete digestHandles[dateHash(mDate)];
     }
   });
-  
+
   // set up a sub for each day for the DIGEST_PRELOADING days before and after
-  // but we want to be smart about it --  
+  // but we want to be smart about it --
   for (mDate = firstDate; mDate < lastDate; mDate.add('days',1 )) {
     if (! digestHandles[dateHash(mDate)]) {
       // console.log('subscribing digest for ' + mDate.toString());

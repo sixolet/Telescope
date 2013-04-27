@@ -1,4 +1,4 @@
-var analyticsInit = function() {
+analyticsInit = function() {
   // Mixpanel
   if (mixpanelId=getSetting("mixpanelId")){
     (function (c, a) {
@@ -58,7 +58,7 @@ var analyticsInit = function() {
 
 }
 
-var analyticsRequest = function() {
+analyticsRequest = function() {
   // Mixpanel
   if(typeof mixpanel !== 'undefined' && typeof mixpanel.people !== 'undefined'){
     if(Meteor.user()){
@@ -66,7 +66,7 @@ var analyticsRequest = function() {
       mixpanel.people.identify(currentUserEmail);
       mixpanel.people.set({
           'username': getDisplayName(Meteor.user()),
-          '$last_login': new Date(), 
+          '$last_login': new Date(),
           '$created': moment(Meteor.user().createdAt)._d,
           '$email': currentUserEmail
       });

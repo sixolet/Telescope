@@ -1,0 +1,1 @@
+A straightforward wrapper around the excellent [page.js](http://visionmedia.github.com/page.js/).

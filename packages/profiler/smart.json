@@ -1,0 +1,11 @@
+{
+  "name": "profiler",
+  "description": "Run node-profiler against your meteor app",
+  "homepage": "https://github.com/tmeasday/meteor-profiler",
+  "author": "Tom Coleman <tom@thesnail.org>",
+  "version": "0.1.0",
+  "git": "https://github.com/tmeasday/meteor-profiler.git",
+  "packages": {
+    "node-modules": {}
+  }
+}
