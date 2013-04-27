@@ -41,11 +41,13 @@ autoclient = function (id) {
   if (!id)
     id = Random.id();
   var _id = '_' + id;
+  console.log("autoclient id", id);
   var afterLogin = function (err) {
     if (err) {
       Meteor.loginWithPassword(_id, id, afterLogin);
       return;
     }
+    console.log("logged in");
     autoclientLoggedIn = new Date();
     setTimeout(function () {
       autoclientPrePost = new Date();
